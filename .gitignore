@@ -1,0 +1,55 @@
+# Maven, Java and local dependency caches
+**/target/
+*.class
+*.jar
+*.war
+.m2/
+*.hprof
+hs_err_pid*
+replay_pid*
+
+# Local configuration and credentials (commit examples only)
+.env
+.env.*
+*.env
+!.env.example
+!.env.production.example
+.secrets/
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+.kube/
+kubeconfig
+kubeconfig.*
+settings.local.xml
+
+# Generated deployments, databases and verification output
+.rendered/
+*.log
+*.db
+*.sqlite
+*.sqlite3
+*.zip
+*.tar
+*.tar.gz
+coverage/
+
+# Python caches and virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Editors and operating systems
+.idea/
+.vscode/
+*.iml
+*.swp
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini

@@ -1,0 +1,21 @@
+# Edit host, ingressClassName and TLS secret for your installed controller, then apply separately.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: commerce
+  namespace: commerce
+spec:
+  ingressClassName: platform
+  tls:
+    - hosts: [commerce.example.com]
+      secretName: commerce-tls
+  rules:
+    - host: commerce.example.com
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: gateway
+                port: {number: 8080}

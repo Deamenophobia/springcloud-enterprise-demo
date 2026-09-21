@@ -1,0 +1,87 @@
+name: commerce-reference
+x-app: &app
+  restart: unless-stopped
+  read_only: true
+  tmpfs: ["/tmp:size=64m,mode=1777"]
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  mem_limit: 768m
+  cpus: 1.0
+  stop_grace_period: 35s
+x-auth: &auth
+  JWT_MODE: demo
+  JWT_ISSUER: commerce-demo
+  JWT_AUDIENCE: commerce-api
+  JWT_SECRET: ${JWT_SECRET:?Run python scripts/init-env.py}
+services:
+  catalog-db:
+    image: postgres:17.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: catalog
+      POSTGRES_USER: catalog
+      POSTGRES_PASSWORD: ${CATALOG_DB_PASSWORD:?Run python scripts/init-env.py}
+    volumes: ["catalog-data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U catalog -d catalog"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  order-db:
+    image: postgres:17.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: orders
+      POSTGRES_USER: orders
+      POSTGRES_PASSWORD: ${ORDER_DB_PASSWORD:?Run python scripts/init-env.py}
+    volumes: ["order-data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orders -d orders"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  catalog-service:
+    <<: *app
+    image: commerce/catalog-service:${IMAGE_TAG:-dev}
+    build:
+      context: .
+      args: {SERVICE: catalog-service}
+    environment:
+      <<: *auth
+      DB_URL: jdbc:postgresql://catalog-db:5432/catalog
+      DB_USER: catalog
+      DB_PASSWORD: ${CATALOG_DB_PASSWORD}
+    depends_on:
+      catalog-db: {condition: service_healthy}
+  order-service:
+    <<: *app
+    image: commerce/order-service:${IMAGE_TAG:-dev}
+    build:
+      context: .
+      args: {SERVICE: order-service}
+    environment:
+      <<: *auth
+      DB_URL: jdbc:postgresql://order-db:5432/orders
+      DB_USER: orders
+      DB_PASSWORD: ${ORDER_DB_PASSWORD}
+      CATALOG_URL: http://catalog-service:8080
+    depends_on:
+      order-db: {condition: service_healthy}
+      catalog-service: {condition: service_healthy}
+  gateway:
+    <<: *app
+    image: commerce/gateway:${IMAGE_TAG:-dev}
+    build:
+      context: .
+      args: {SERVICE: gateway}
+    environment:
+      <<: *auth
+      CATALOG_URL: http://catalog-service:8080
+      ORDER_URL: http://order-service:8080
+    ports: ["127.0.0.1:8080:8080"]
+    depends_on:
+      catalog-service: {condition: service_healthy}
+      order-service: {condition: service_healthy}
+volumes:
+  catalog-data:
+  order-data:

@@ -1,0 +1,137 @@
+apiVersion: v1
+kind: Service
+metadata: {name: catalog-db}
+spec:
+  clusterIP: None
+  selector: {app: catalog-db}
+  ports: [{name: postgres, port: 5432}]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: {name: catalog-db}
+spec:
+  serviceName: catalog-db
+  replicas: 1
+  selector: {matchLabels: {app: catalog-db}}
+  template:
+    metadata:
+      labels: {app: catalog-db}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 70
+        runAsGroup: 70
+        fsGroup: 70
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: postgres
+          image: postgres:17.6-alpine
+          ports: [{name: postgres, containerPort: 5432}]
+          env:
+            - {name: POSTGRES_DB, value: catalog}
+            - {name: POSTGRES_USER, value: catalog}
+            - name: POSTGRES_PASSWORD
+              valueFrom: {secretKeyRef: {name: catalog-service-db, key: DB_PASSWORD}}
+            - {name: PGDATA, value: /var/lib/postgresql/data/pgdata}
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: "1", memory: 512Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          readinessProbe:
+            exec: {command: ["pg_isready", "-U", "catalog", "-d", "catalog"]}
+            periodSeconds: 5
+          volumeMounts:
+            - {name: data, mountPath: /var/lib/postgresql/data}
+            - {name: tmp, mountPath: /tmp}
+            - {name: run, mountPath: /var/run/postgresql}
+      volumes:
+        - {name: tmp, emptyDir: {}}
+        - {name: run, emptyDir: {}}
+  volumeClaimTemplates:
+    - metadata: {name: data}
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources: {requests: {storage: 2Gi}}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: catalog-db-ingress}
+spec:
+  podSelector: {matchLabels: {app: catalog-db}}
+  policyTypes: [Ingress]
+  ingress:
+    - from: [{podSelector: {matchLabels: {app: catalog-service}}}]
+      ports: [{protocol: TCP, port: 5432}]
+---
+apiVersion: v1
+kind: Service
+metadata: {name: order-db}
+spec:
+  clusterIP: None
+  selector: {app: order-db}
+  ports: [{name: postgres, port: 5432}]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: {name: order-db}
+spec:
+  serviceName: order-db
+  replicas: 1
+  selector: {matchLabels: {app: order-db}}
+  template:
+    metadata:
+      labels: {app: order-db}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 70
+        runAsGroup: 70
+        fsGroup: 70
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: postgres
+          image: postgres:17.6-alpine
+          ports: [{name: postgres, containerPort: 5432}]
+          env:
+            - {name: POSTGRES_DB, value: orders}
+            - {name: POSTGRES_USER, value: orders}
+            - name: POSTGRES_PASSWORD
+              valueFrom: {secretKeyRef: {name: order-service-db, key: DB_PASSWORD}}
+            - {name: PGDATA, value: /var/lib/postgresql/data/pgdata}
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: "1", memory: 512Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          readinessProbe:
+            exec: {command: ["pg_isready", "-U", "orders", "-d", "orders"]}
+            periodSeconds: 5
+          volumeMounts:
+            - {name: data, mountPath: /var/lib/postgresql/data}
+            - {name: tmp, mountPath: /tmp}
+            - {name: run, mountPath: /var/run/postgresql}
+      volumes:
+        - {name: tmp, emptyDir: {}}
+        - {name: run, emptyDir: {}}
+  volumeClaimTemplates:
+    - metadata: {name: data}
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources: {requests: {storage: 2Gi}}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: order-db-ingress}
+spec:
+  podSelector: {matchLabels: {app: order-db}}
+  policyTypes: [Ingress]
+  ingress:
+    - from: [{podSelector: {matchLabels: {app: order-service}}}]
+      ports: [{protocol: TCP, port: 5432}]

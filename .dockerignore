@@ -1,0 +1,32 @@
+# Allow only the inputs needed by the multi-stage Maven build.
+**
+!Dockerfile
+!pom.xml
+!security-common/
+!security-common/pom.xml
+!security-common/src/
+!security-common/src/**
+!gateway/
+!gateway/pom.xml
+!gateway/src/
+!gateway/src/**
+!catalog-service/
+!catalog-service/pom.xml
+!catalog-service/src/
+!catalog-service/src/**
+!order-service/
+!order-service/pom.xml
+!order-service/src/
+!order-service/src/**
+
+# Also exclude private material accidentally placed beneath a source directory.
+**/.env*
+**/*.env
+**/.secrets/**
+**/*.key
+**/*.pem
+**/*.p12
+**/*.pfx
+**/*.jks
+**/*.keystore
+**/__pycache__/**
