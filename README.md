@@ -42,7 +42,14 @@ Kubernetes Services provide DNS discovery and load balancing. ConfigMaps and Sec
 
 Install Docker Engine + Compose v2, or Docker Desktop in **Linux containers** mode, and Python 3. Allow roughly 4 GB of memory for the stack, plus build headroom. Internet access is needed on the first build. Java and Maven on the host are optional when using Docker.
 
-Clone or download this repository into a directory named `springcloud-enterprise-demo`. No machine-specific checkout location is required.
+Clone the repository from any working directory:
+
+```bash
+git clone https://github.com/Deamenophobia/springcloud-enterprise-demo.git
+cd springcloud-enterprise-demo
+```
+
+Alternatively, download the source archive from GitHub. No machine-specific checkout location is required.
 
 From the project's root directory on Linux/macOS/WSL:
 
@@ -52,7 +59,7 @@ bash scripts/local-up.sh
 
 This creates random demo credentials in `.env` without replacing an existing file, builds the three images, waits for health checks, and runs the smoke test.
 
-On Windows PowerShell:
+On Windows PowerShell, after cloning or extracting the repository (start in its parent directory):
 
 ```powershell
 cd springcloud-enterprise-demo
