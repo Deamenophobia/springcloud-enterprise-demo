@@ -14,4 +14,4 @@ Do not commit local environment files, signing keys, kubeconfigs, rendered manif
 
 A new Flyway migration must preserve compatibility with the previous application release during rolling deployments. Include idempotency and ownership checks when changing order behavior.
 
-Teaching experiments belong in `framework-labs`, with article drafts under `docs/learning`. Assert observable behavior, include a counterexample where useful, and describe the limits of each test. Use `clean test` before producing evidence with `python3 scripts/lab-report.py`; also run `python3 -m unittest discover -s scripts/tests -v` when changing the reporter. Keep raw build output and screenshots containing local paths or credentials out of Git. The generated CI artifact provides sanitized named test results.
+Teaching experiments belong in `framework-labs`. Keep GitHub documentation concise; maintain long-form blog articles and figures in the website's GitLab repository. Run `clean test` before `python3 scripts/lab-report.py`, and run `python3 -m unittest discover -s scripts/tests -v` when changing the reporter. Keep raw build output and private paths or credentials out of Git.

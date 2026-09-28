@@ -10,7 +10,7 @@
 
 This run used Windows, Java 21.0.5 and Maven 3.9.9, with Spring Framework 7.0.9 and H2 2.4.240 resolved by the existing Boot parent. Maven used an external dependency cache and an ASCII-only JVM temporary directory to avoid a Windows Surefire launcher problem. No local paths were added to the build configuration.
 
-Commands: `mvn -B -ntp clean verify`, `python -m unittest discover -s scripts/tests -v`, then `python scripts/lab-report.py`. This local run did not enable the PostgreSQL profile or start Docker or Kubernetes. The updated CI workflow runs PostgreSQL and Docker checks and preserves sanitized laboratory evidence. See [the article-series guide](learning/README.md) for commands and evidence limits.
+Commands: `mvn -B -ntp clean verify`, `python -m unittest discover -s scripts/tests -v`, then `python scripts/lab-report.py`. This local run did not enable the PostgreSQL profile or start Docker or Kubernetes. The updated CI workflow runs PostgreSQL and Docker checks and preserves sanitized laboratory evidence. See [laboratory instructions](learning/README.md) for commands and evidence limits.
 
 ## Published baseline CI
 

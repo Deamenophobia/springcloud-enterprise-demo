@@ -27,7 +27,7 @@ Kubernetes Services provide DNS discovery and load balancing. ConfigMaps and Sec
 | Directory | Purpose |
 |---|---|
 | `framework-labs/` | Test-only experiments explaining bean wiring, Boot JDBC and transaction proxies |
-| `docs/learning/` | Three runnable Spring architecture chapters and the article-series roadmap |
+| `docs/learning/` | Brief laboratory run instructions; blog articles are maintained on GitLab |
 | `gateway/` | Reactive gateway, route authorization, downstream timeouts |
 | `catalog-service/` | Bounded product listing and lookup; owned database |
 | `order-service/` | Price lookup, validation, customer ownership, atomic idempotency |
@@ -122,7 +122,7 @@ All API routes require a signed JWT. Demo tokens last 15 minutes. The `demo-toke
 
 ## Build and test the Java code
 
-For an explanation-driven tour, start with [Spring architecture through executable experiments](docs/learning/README.md). The independent laboratory runs 16 focused tests without Docker or PostgreSQL:
+The independent laboratory runs 16 focused tests without Docker or PostgreSQL. See [run instructions](docs/learning/README.md); the complementary [blog series is maintained on GitLab](https://gitlab.com/Deamenophobia/happykokoro/-/tree/docs/spring-framework-companion/content/spring-framework).
 
 ```bash
 mvn -B -ntp -pl framework-labs clean test
