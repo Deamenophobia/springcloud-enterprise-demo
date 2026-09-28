@@ -31,7 +31,25 @@ jobs:
           cache: maven
       - name: Check public repository contents
         run: python3 scripts/check-publication.py
-      - run: mvn -B -ntp -Ppostgres-it verify
+      - name: Test the evidence reporter
+        run: python3 -m unittest discover -s scripts/tests -v
+      - name: Verify Java and PostgreSQL behavior
+        run: mvn -B -ntp -Ppostgres-it clean verify
+      - name: Generate laboratory evidence
+        if: always()
+        run: |
+          status=0
+          python3 scripts/lab-report.py || status=$?
+          cat framework-labs/target/evidence/results.md >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+      - name: Preserve laboratory evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: framework-labs-evidence
+          path: framework-labs/target/evidence/
+          if-no-files-found: error
+          retention-days: 30
       - run: |
           for file in scripts/*.sh; do bash -n "$file"; done
           shellcheck scripts/*.sh

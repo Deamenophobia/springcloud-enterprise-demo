@@ -2,6 +2,8 @@
 **
 !Dockerfile
 !pom.xml
+!framework-labs/
+!framework-labs/pom.xml
 !security-common/
 !security-common/pom.xml
 !security-common/src/
