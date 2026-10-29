@@ -10,9 +10,9 @@ import org.springframework.web.server.ResponseStatusException;
 class OrderService {
     record Result(PurchaseOrder order, boolean created) {}
     private final OrderRepository repository;
-    private final CatalogClient catalog;
+    private final CatalogPort catalog;
     private final TransactionTemplate transactions;
-    OrderService(OrderRepository repository, CatalogClient catalog, TransactionTemplate transactions) {
+    OrderService(OrderRepository repository, CatalogPort catalog, TransactionTemplate transactions) {
         this.repository = repository; this.catalog = catalog; this.transactions = transactions;
     }
     Result create(String customer, String key, CreateOrder request, String token) {

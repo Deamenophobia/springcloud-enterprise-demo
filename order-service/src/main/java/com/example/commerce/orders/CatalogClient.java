@@ -1,5 +1,4 @@
 package com.example.commerce.orders;
-import java.math.BigDecimal;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,8 +10,7 @@ import org.springframework.web.client.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @Component
-class CatalogClient {
-    record Quote(String sku, String name, BigDecimal price, String currency) {}
+class CatalogClient implements CatalogPort {
     private final RestClient client;
     private final CircuitBreakerFactory<?, ?> breakers;
     CatalogClient(RestClient.Builder builder, CircuitBreakerFactory<?, ?> breakers,
@@ -22,7 +20,8 @@ class CatalogClient {
         this.client = builder.baseUrl(url).requestFactory(factory).build();
         this.breakers = breakers;
     }
-    Quote quote(String sku, String token) {
+    @Override
+    public Quote quote(String sku, String token) {
         return breakers.create("catalog").run(() -> {
             var quote = client.get().uri("/api/products/{sku}", sku)
                 .headers(headers -> headers.setBearerAuth(token)).retrieve().body(Quote.class);

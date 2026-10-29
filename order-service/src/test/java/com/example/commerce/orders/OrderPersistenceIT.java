@@ -29,8 +29,8 @@ class OrderPersistenceIT {
         var isolated = new DriverManagerDataSource(url, user, password);
         isolated.setConnectionProperties(properties);
         repository = new OrderRepository(JdbcClient.create(isolated));
-        var catalog = mock(CatalogClient.class);
-        when(catalog.quote(any(), any())).thenReturn(new CatalogClient.Quote("KEYBOARD-001", "Keyboard", new BigDecimal("89.00"), "USD"));
+        var catalog = mock(CatalogPort.class);
+        when(catalog.quote(any(), any())).thenReturn(new CatalogPort.Quote("KEYBOARD-001", "Keyboard", new BigDecimal("89.00"), "USD"));
         service = new OrderService(repository, catalog, new TransactionTemplate(new DataSourceTransactionManager(isolated)));
     }
     @AfterAll void cleanup() {
