@@ -35,13 +35,21 @@ class OrderControllerTest {
     @Test void invalidQuantityIs400() throws Exception {
         mvc.perform(post("/api/orders").with(jwt().authorities(new SimpleGrantedAuthority("SCOPE_orders.write")))
             .contentType(MediaType.APPLICATION_JSON).content("{\"sku\":\"KEYBOARD-001\",\"quantity\":0}")
-            .header("Idempotency-Key", "request-001")).andExpect(status().isBadRequest());
+            .header("Idempotency-Key", "request-001"))
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.errors.length()").value(1))
+            .andExpect(jsonPath("$.errors[0].field").value("quantity"))
+            .andExpect(jsonPath("$.errors[0].code").value("Min"))
+            .andExpect(jsonPath("$.errors[0].message").isNotEmpty());
         verifyNoInteractions(service);
     }
     @Test void missingKeyIs400() throws Exception {
         mvc.perform(post("/api/orders").with(jwt().authorities(new SimpleGrantedAuthority("SCOPE_orders.write")))
             .contentType(MediaType.APPLICATION_JSON).content("{\"sku\":\"KEYBOARD-001\",\"quantity\":2}"))
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.errors").doesNotExist());
         verifyNoInteractions(service);
     }
     @Test void createdOrderHasLocationAndOwnerFromToken() throws Exception {
