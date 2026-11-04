@@ -44,7 +44,7 @@ class OrderPersistenceIT {
             List<Future<OrderService.Result>> futures = new ArrayList<>();
             for (int i = 0; i < 8; i++) futures.add(pool.submit(() -> {
                 start.await();
-                return service.create("alice", key, new CreateOrder("KEYBOARD-001", 2), "token");
+                return service.create("alice", key, new CreateOrder("KEYBOARD-001", 2, null), "token");
             }));
             start.countDown();
             List<OrderService.Result> results = new ArrayList<>();

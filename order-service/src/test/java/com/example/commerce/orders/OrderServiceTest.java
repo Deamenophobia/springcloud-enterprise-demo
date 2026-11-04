@@ -15,7 +15,7 @@ class OrderServiceTest {
     CatalogPort catalog = mock(CatalogPort.class);
     OrderService service;
     PurchaseOrder existing = new PurchaseOrder(UUID.randomUUID(), "alice", "request-001", "KEYBOARD-001", 2,
-        new BigDecimal("89.00"), new BigDecimal("178.00"), "USD", OffsetDateTime.now());
+        new BigDecimal("89.00"), new BigDecimal("178.00"), "USD", OffsetDateTime.now(), null);
     @BeforeEach void setup() {
         var manager = mock(PlatformTransactionManager.class);
         when(manager.getTransaction(any())).thenReturn(mock(TransactionStatus.class));
@@ -23,7 +23,7 @@ class OrderServiceTest {
     }
     @Test void replayWorksWithoutCatalogAndDoesNotInsertAgain() {
         when(repository.findByKey("alice", "request-001")).thenReturn(Optional.of(existing));
-        var result = service.create("alice", "request-001", new CreateOrder("KEYBOARD-001", 2), "token");
+        var result = service.create("alice", "request-001", new CreateOrder("KEYBOARD-001", 2, "  "), "token");
         assertThat(result.created()).isFalse();
         assertThat(result.order().id()).isEqualTo(existing.id());
         verifyNoInteractions(catalog);
@@ -31,22 +31,23 @@ class OrderServiceTest {
     }
     @Test void conflictingRequestReturns409() {
         when(repository.findByKey("alice", "request-001")).thenReturn(Optional.of(existing));
-        assertThatThrownBy(() -> service.create("alice", "request-001", new CreateOrder("KEYBOARD-001", 3), "token"))
+        assertThatThrownBy(() -> service.create("alice", "request-001", new CreateOrder("KEYBOARD-001", 3, null), "token"))
             .isInstanceOfSatisfying(ResponseStatusException.class, e -> assertThat(e.getStatusCode().value()).isEqualTo(409));
     }
     @Test void totalUsesServerPrice() {
         when(repository.findByKey(any(), any())).thenReturn(Optional.empty());
         when(catalog.quote("KEYBOARD-001", "token")).thenReturn(new CatalogPort.Quote("KEYBOARD-001", "Keyboard", new BigDecimal("89.00"), "USD"));
         when(repository.insert(any())).thenReturn(1);
-        var result = service.create("alice", "request-001", new CreateOrder("KEYBOARD-001", 2), "token");
+        var result = service.create("alice", "request-001", new CreateOrder("KEYBOARD-001", 2, "  Leave at reception  "), "token");
         assertThat(result.created()).isTrue();
         assertThat(result.order().total()).isEqualByComparingTo("178.00");
+        assertThat(result.order().customerNote()).isEqualTo("Leave at reception");
     }
     @Test void concurrentLoserReturnsWinnersOrder() {
         when(repository.findByKey("alice", "request-001")).thenReturn(Optional.empty(), Optional.of(existing));
         when(catalog.quote(any(), any())).thenReturn(new CatalogPort.Quote("KEYBOARD-001", "Keyboard", new BigDecimal("99.00"), "USD"));
         when(repository.insert(any())).thenReturn(0);
-        var result = service.create("alice", "request-001", new CreateOrder("KEYBOARD-001", 2), "token");
+        var result = service.create("alice", "request-001", new CreateOrder("KEYBOARD-001", 2, null), "token");
         assertThat(result.order()).isEqualTo(existing);
         assertThat(result.created()).isFalse();
     }
@@ -55,7 +56,7 @@ class OrderServiceTest {
         when(catalog.quote(any(), any())).thenThrow(new ResponseStatusException(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE));
         var manager = mock(PlatformTransactionManager.class);
         var subject = new OrderService(repository, catalog, new TransactionTemplate(manager));
-        assertThatThrownBy(() -> subject.create("alice", "request-001", new CreateOrder("KEYBOARD-001", 2), "token"))
+        assertThatThrownBy(() -> subject.create("alice", "request-001", new CreateOrder("KEYBOARD-001", 2, null), "token"))
             .isInstanceOfSatisfying(ResponseStatusException.class, e -> assertThat(e.getStatusCode().value()).isEqualTo(503));
         verify(repository, never()).insert(any());
         verifyNoInteractions(manager);

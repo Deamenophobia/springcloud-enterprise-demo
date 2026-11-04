@@ -1,11 +1,12 @@
 package com.example.commerce.orders;
+import java.sql.Types;
 import java.util.*;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 @Repository
 class OrderRepository {
-    private static final String COLUMNS = "id, customer_id, idempotency_key, sku, quantity, unit_price, total, currency, created_at";
+    private static final String COLUMNS = "id, customer_id, idempotency_key, sku, quantity, unit_price, total, currency, created_at, customer_note";
     private final JdbcClient jdbc;
     OrderRepository(JdbcClient jdbc) { this.jdbc = jdbc; }
     Optional<PurchaseOrder> findByKey(String customer, String key) {
@@ -18,12 +19,13 @@ class OrderRepository {
     }
     int insert(PurchaseOrder order) {
         return jdbc.sql("""
-            INSERT INTO orders (id, customer_id, idempotency_key, sku, quantity, unit_price, total, currency, created_at)
-            VALUES (:id, :customer, :key, :sku, :quantity, :price, :total, :currency, :created)
+            INSERT INTO orders (id, customer_id, idempotency_key, sku, quantity, unit_price, total, currency, created_at, customer_note)
+            VALUES (:id, :customer, :key, :sku, :quantity, :price, :total, :currency, :created, :note)
             ON CONFLICT (customer_id, idempotency_key) DO NOTHING
             """)
             .param("id", order.id()).param("customer", order.customerId()).param("key", order.idempotencyKey())
             .param("sku", order.sku()).param("quantity", order.quantity()).param("price", order.unitPrice())
-            .param("total", order.total()).param("currency", order.currency()).param("created", order.createdAt()).update();
+            .param("total", order.total()).param("currency", order.currency()).param("created", order.createdAt())
+            .param("note", order.customerNote(), Types.VARCHAR).update();
     }
 }

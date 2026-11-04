@@ -54,12 +54,13 @@ class OrderControllerTest {
     }
     @Test void createdOrderHasLocationAndOwnerFromToken() throws Exception {
         var order = new PurchaseOrder(UUID.randomUUID(), "alice", "request-001", "KEYBOARD-001", 2,
-            new BigDecimal("89.00"), new BigDecimal("178.00"), "USD", OffsetDateTime.now());
+            new BigDecimal("89.00"), new BigDecimal("178.00"), "USD", OffsetDateTime.now(), null);
         when(service.create(eq("alice"), eq("request-001"), any(), any())).thenReturn(new OrderService.Result(order, true));
         mvc.perform(post("/api/orders").with(jwt().jwt(j -> j.subject("alice")).authorities(new SimpleGrantedAuthority("SCOPE_orders.write")))
             .contentType(MediaType.APPLICATION_JSON).content("{\"sku\":\"KEYBOARD-001\",\"quantity\":2}")
             .header("Idempotency-Key", "request-001"))
             .andExpect(status().isCreated()).andExpect(header().string("Location", "/api/orders/" + order.id()))
-            .andExpect(jsonPath("$.total").value(178)).andExpect(jsonPath("$.customerId").value("alice"));
+            .andExpect(jsonPath("$.total").value(178)).andExpect(jsonPath("$.customerId").value("alice"))
+            .andExpect(jsonPath("$.customerNote").doesNotExist());
     }
 }
