@@ -26,6 +26,8 @@ Kubernetes Services provide DNS discovery and load balancing. ConfigMaps and Sec
 
 | Directory | Purpose |
 |---|---|
+| `framework-labs/` | Test-only experiments explaining bean wiring, Boot JDBC and transaction proxies |
+| `docs/learning/` | Brief laboratory run instructions; blog articles are maintained on GitLab |
 | `gateway/` | Reactive gateway, route authorization, downstream timeouts |
 | `catalog-service/` | Bounded product listing and lookup; owned database |
 | `order-service/` | Price lookup, validation, customer ownership, atomic idempotency |
@@ -119,6 +121,15 @@ A new order returns **201**, a `Location` header, and a total of **178.00 USD**.
 All API routes require a signed JWT. Demo tokens last 15 minutes. The `demo-token.py` utility is strictly for local/demo signing; production accepts tokens from your external identity provider.
 
 ## Build and test the Java code
+
+The independent laboratory runs 16 focused tests without Docker or PostgreSQL. See [run instructions](docs/learning/README.md); the complementary [blog series is maintained on GitLab](https://gitlab.com/Deamenophobia/happykokoro/-/tree/docs/spring-framework-companion/content/spring-framework).
+
+```bash
+mvn -B -ntp -pl framework-labs clean test
+python3 scripts/lab-report.py
+```
+
+Use `python` on Windows. The generated report names each assertion scenario; CI preserves it as the `framework-labs-evidence` artifact. These container and H2 integration experiments complement the application tests below.
 
 Install JDK 21 and Maven 3.9+:
 

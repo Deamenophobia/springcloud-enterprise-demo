@@ -18,6 +18,7 @@
     <project.build.outputTimestamp>2026-01-01T00:00:00Z</project.build.outputTimestamp>
   </properties>
   <modules>
+    <module>framework-labs</module>
     <module>security-common</module>
     <module>gateway</module>
     <module>catalog-service</module>

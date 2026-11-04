@@ -13,3 +13,5 @@ Keep URLs and filesystem paths portable. Use repository-relative paths in script
 Do not commit local environment files, signing keys, kubeconfigs, rendered manifests, database files, logs or build outputs. Environment examples contain placeholders only. The checked-in JWT keys and CI database password are disposable test fixtures, never deployment credentials.
 
 A new Flyway migration must preserve compatibility with the previous application release during rolling deployments. Include idempotency and ownership checks when changing order behavior.
+
+Teaching experiments belong in `framework-labs`. Keep GitHub documentation concise; maintain long-form blog articles and figures in the website's GitLab repository. Run `clean test` before `python3 scripts/lab-report.py`, and run `python3 -m unittest discover -s scripts/tests -v` when changing the reporter. Keep raw build output and private paths or credentials out of Git.

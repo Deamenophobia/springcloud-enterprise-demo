@@ -50,6 +50,21 @@ expect(422, call("POST", "/api/orders", {**data, "sku": "UNKNOWN"}, key=str(uuid
 path = "/api/orders/" + first[1]["id"]
 expect(200, call("GET", path))
 expect(404, call("GET", path, token=auth.token("another-user")))
+assert "customerNote" not in first[1], first
+note_key = str(uuid.uuid4())
+note = "Leave at reception"
+with_note = expect(201, call("POST", "/api/orders", {**data, "customerNote": "  " + note + "  "}, key=note_key))
+assert with_note[1]["customerNote"] == note, with_note
+read_note = expect(200, call("GET", "/api/orders/" + with_note[1]["id"]))
+assert read_note[1]["customerNote"] == note, read_note
+replayed_note = expect(200, call("POST", "/api/orders", {**data, "customerNote": note}, key=note_key))
+assert replayed_note[1]["id"] == with_note[1]["id"], replayed_note
+expect(409, call("POST", "/api/orders", {**data, "customerNote": "Different note"}, key=note_key))
+oversize = expect(400, call("POST", "/api/orders", {**data, "customerNote": "x" * 501}, key=str(uuid.uuid4())))
+assert {"field": "customerNote", "code": "Size"} in [
+    {"field": error["field"], "code": error["code"]} for error in oversize[1]["errors"]
+], oversize
+print("PASS: customer note normalization, persistence, replay conflict and size validation")
 key = str(uuid.uuid4())
 with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
     results = list(pool.map(lambda _: call("POST", "/api/orders", data, key=key), range(8)))

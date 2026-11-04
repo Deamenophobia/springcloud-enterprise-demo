@@ -31,7 +31,25 @@ jobs:
           cache: maven
       - name: Check public repository contents
         run: python3 scripts/check-publication.py
-      - run: mvn -B -ntp -Ppostgres-it verify
+      - name: Test the evidence reporter
+        run: python3 -m unittest discover -s scripts/tests -v
+      - name: Verify Java and PostgreSQL behavior
+        run: mvn -B -ntp -Ppostgres-it clean verify
+      - name: Generate laboratory evidence
+        if: always()
+        run: |
+          status=0
+          python3 scripts/lab-report.py || status=$?
+          cat framework-labs/target/evidence/results.md >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+      - name: Preserve laboratory evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: framework-labs-evidence
+          path: framework-labs/target/evidence/
+          if-no-files-found: error
+          retention-days: 30
       - run: |
           for file in scripts/*.sh; do bash -n "$file"; done
           shellcheck scripts/*.sh
@@ -43,6 +61,13 @@ jobs:
           docker compose config --quiet
           docker compose up --build --wait --wait-timeout 300
           python3 scripts/smoke-test.py
+      - name: Verify Kubernetes rollout and rollback in kind
+        run: |
+          docker compose down
+          curl -fsSL -o "$RUNNER_TEMP/kind" https://github.com/kubernetes-sigs/kind/releases/download/v0.33.0/kind-linux-amd64
+          printf '%s  %s\n' aee6151561422756b764a4ae28e7f44cda5af5a9eead3cc9985112b1de8d8e0d "$RUNNER_TEMP/kind" | sha256sum --check
+          chmod +x "$RUNNER_TEMP/kind"
+          PATH="$RUNNER_TEMP:$PATH" bash scripts/verify-kind-rollout.sh
       - if: failure()
         run: docker compose logs --no-color --tail=150
       - if: always()

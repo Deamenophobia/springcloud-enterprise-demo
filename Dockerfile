@@ -2,6 +2,7 @@
 FROM maven:3.9.11-eclipse-temurin-21 AS build
 WORKDIR /workspace
 COPY pom.xml .
+COPY framework-labs/pom.xml framework-labs/pom.xml
 COPY security-common/pom.xml security-common/pom.xml
 COPY gateway/pom.xml gateway/pom.xml
 COPY catalog-service/pom.xml catalog-service/pom.xml
